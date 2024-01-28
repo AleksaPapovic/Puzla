@@ -5,15 +5,18 @@ pub mod read;
 pub mod save;
 pub mod algorithm;
 
+use egui::Image;
 use read::{ read_images, read_parts };
+use save::{ append_part };
 use image::{ io::Reader as ImageReader, DynamicImage, GenericImageView, ImageBuffer, RgbImage };
 use algorithm::{ mean_square_error };
 
 fn main() {
-    let redni_broj_slike = 4;
+    let redni_broj_slike = 1;
+    let parts = "1";
 
     let putnja_slike = format!("src/examples/picture{redni_broj_slike}.jpg");
-    let putanja_delova = format!("src/examples/slika {redni_broj_slike}");
+    let putanja_delova = format!("src/examples/slika {parts}");
 
     let mut img = ImageReader::open(putnja_slike).unwrap().decode().unwrap();
 
@@ -35,7 +38,7 @@ fn create_image(img: &DynamicImage, putanja_delova: String) {
         let mut original_parts: Vec<RgbImage> = read_parts(&mut img.clone(), parts.1, parts.2);
         let mut mse_values: Vec<f64> = vec![];
         for original_part in original_parts.iter() {
-            let mse = mean_square_error(original_part, part);
+            let mse = mean_square_error(&original_part, part);
             mse_values.push(mse);
         }
         println!("mse {:?}", mse_values);
@@ -47,6 +50,9 @@ fn create_image(img: &DynamicImage, putanja_delova: String) {
         {
             println!("Index of minimum MSE: {}", index);
             println!("Indeks: {}  min: {:?}", index, min);
+
+            append_part(&mut img.clone(), &part, index);
+
             original_parts.remove(index as usize);
         } else {
             println!("The vector is empty");

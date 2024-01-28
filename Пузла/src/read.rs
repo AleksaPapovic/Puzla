@@ -46,7 +46,7 @@ pub fn read_images(path_str: String) -> (Vec<RgbImage>, u32, u32) {
         println!("Path is not a directory");
     }
 
-    return (images, mh, mw);
+    return (images, mw, mh);
 }
 
 pub fn read_parts(img: &mut DynamicImage, partw: u32, parth: u32) -> Vec<RgbImage> {
