@@ -1,11 +1,11 @@
 use std::{ fs::{ self, File }, io::{ BufReader, Read, Seek, SeekFrom }, path::Path };
 
-use image::{ DynamicImage, GenericImageView, ImageFormat, RgbImage };
+use image::{ DynamicImage, GenericImageView, ImageFormat, RgbaImage };
 
-pub fn read_images(path_str: String) -> (Vec<RgbImage>, u32, u32) {
+pub fn read_images(path_str: String) -> (Vec<RgbaImage>, u32, u32) {
     let mut mw = 0;
     let mut mh = 0;
-    let mut images: Vec<RgbImage> = Vec::new();
+    let mut images: Vec<RgbaImage> = Vec::new();
     let path = Path::new(&path_str);
     if path.is_dir() {
         if let Ok(entries) = fs::read_dir(path) {
@@ -21,18 +21,18 @@ pub fn read_images(path_str: String) -> (Vec<RgbImage>, u32, u32) {
                         let format = image::guess_format(&start).unwrap();
                         match format {
                             ImageFormat::Png => {
-                                println!("png");
+                                // println!("png");
                                 reader.seek(SeekFrom::Start(0)).unwrap();
                                 let img = image::load(reader, format).unwrap();
                                 (mw, mh) = max_size(mw, mh, img.width(), img.height());
-                                images.push(img.to_rgb8());
+                                images.push(img.to_rgba8());
                             }
                             ImageFormat::Jpeg => {
-                                println!("jpg");
+                                // println!("jpg");
                                 reader.seek(SeekFrom::Start(0)).unwrap();
                                 let img = image::load(reader, format).unwrap();
                                 (mw, mh) = max_size(mw, mh, img.width(), img.height());
-                                images.push(img.to_rgb8());
+                                images.push(img.to_rgba8());
                             }
                             _ => {}
                         }
@@ -49,7 +49,7 @@ pub fn read_images(path_str: String) -> (Vec<RgbImage>, u32, u32) {
     return (images, mw, mh);
 }
 
-pub fn read_parts(img: &mut DynamicImage, partw: u32, parth: u32) -> Vec<RgbImage> {
+pub fn read_parts(img: &mut DynamicImage, partw: u32, parth: u32) -> Vec<RgbaImage> {
     let mut images = Vec::new();
     let ow = img.width();
     let oh = img.height();
@@ -61,13 +61,13 @@ pub fn read_parts(img: &mut DynamicImage, partw: u32, parth: u32) -> Vec<RgbImag
             let top_left_x = x * partw;
             let top_left_y = y * parth;
             let part_img = img.crop_imm(top_left_x, top_left_y, partw, parth);
-            let filename = format!("output{}.png", y * cols + x + 1);
-            part_img.save(filename);
+            // let filename = format!("output{}.png", y * cols + x + 1);
+            // part_img.save(filename);
             // let mut novi_img = ImageReader::open(format!("output{}.png", y * cols + x + 1))
             //     .unwrap()
             //     .decode()
             //     .unwrap();
-            images.push(part_img.to_rgb8());
+            images.push(part_img.to_rgba8());
         }
     }
     return images;

@@ -1,5 +1,5 @@
-use image::{ DynamicImage, GenericImageView, RgbImage };
-pub fn mean_square_error(img: &RgbImage, img2: &RgbImage) -> f64 {
+use image::{ RgbaImage };
+pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
     let (width1, height1) = img.dimensions();
     let (width2, height2) = img2.dimensions();
 
@@ -17,7 +17,6 @@ pub fn mean_square_error(img: &RgbImage, img2: &RgbImage) -> f64 {
         height = height2;
     }
 
-    img2.save("comp2.jpg");
     let mut mse = 0.0;
     for y in 0..height {
         for x in 0..width {
