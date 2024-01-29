@@ -1,4 +1,4 @@
-use image::{ RgbaImage };
+use image::{ imageops::resize, RgbaImage };
 pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
     let (width1, height1) = img.dimensions();
     let (width2, height2) = img2.dimensions();
@@ -16,7 +16,6 @@ pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
     } else {
         height = height2;
     }
-
     let mut mse = 0.0;
     for y in 0..height {
         for x in 0..width {
@@ -30,7 +29,7 @@ pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
         }
     }
 
-    return mse / ((width1 * height1) as f64);
+    return mse / ((width * height) as f64);
 }
 
 pub fn find_max_with_index(numbers: &[f64]) -> (usize, f64) {

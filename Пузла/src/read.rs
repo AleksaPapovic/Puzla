@@ -1,6 +1,14 @@
 use std::{ fs::{ self, File }, io::{ BufReader, Read, Seek, SeekFrom }, path::Path };
 
-use image::{ DynamicImage, GenericImageView, ImageFormat, RgbaImage };
+use image::{
+    imageops::resize,
+    DynamicImage,
+    GenericImageView,
+    ImageBuffer,
+    ImageFormat,
+    Rgba,
+    RgbaImage,
+};
 
 pub fn read_images(path_str: String) -> (Vec<RgbaImage>, u32, u32) {
     let mut mw = 0;
@@ -50,18 +58,36 @@ pub fn read_images(path_str: String) -> (Vec<RgbaImage>, u32, u32) {
 }
 
 pub fn read_parts(img: &mut DynamicImage, partw: u32, parth: u32) -> Vec<RgbaImage> {
+    println!("UPAO");
     let mut images = Vec::new();
     let ow = img.width();
     let oh = img.height();
     let cols = ((ow as f64) / (partw as f64)).round() as u32;
     let rows = ((oh as f64) / (parth as f64)).round() as u32;
-
+    println!("rows{}", rows);
+    println!("cols{}", cols);
     for y in 0..rows {
         for x in 0..cols {
             let top_left_x = x * partw;
             let top_left_y = y * parth;
-            let part_img = img.crop_imm(top_left_x, top_left_y, partw, parth);
+            let mut part_img = img.crop_imm(top_left_x, top_left_y, partw, parth);
+            println!("pw{} : {partw}", part_img.width());
+            println!("ph{} : {parth}", part_img.height());
             // let filename = format!("output{}.png", y * cols + x + 1);
+            if part_img.width() != partw || part_img.height() != parth {
+                println!("resize");
+                let rw = match x.checked_sub(partw.abs_diff(top_left_x)) {
+                    Some(value) => value as i32,
+                    None => { 0 }
+                };
+
+                let rh = match y.checked_sub(parth.abs_diff(top_left_y)) {
+                    Some(value) => value as i32,
+                    None => { 0 }
+                };
+                println!("resize test {rw} {rh}");
+                part_img = img.crop_imm(rw.abs() as u32, rh.abs() as u32, partw, parth);
+            }
             // part_img.save(filename);
             // let mut novi_img = ImageReader::open(format!("output{}.png", y * cols + x + 1))
             //     .unwrap()

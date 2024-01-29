@@ -35,6 +35,7 @@ fn create_image(img: &DynamicImage, putanja_delova: String) {
     // println!("parts {},height{}", parts.1, parts.2);
 
     let mut new_img = RgbaImage::new(img.width(), img.height());
+    let mut removed: Vec<usize> = Vec::new();
     for (_, part) in parts.0.iter().enumerate() {
         let mut original_parts: Vec<RgbaImage> = read_parts(&mut img.clone(), parts.1, parts.2);
         let mut mse_values: Vec<f64> = vec![];
@@ -42,20 +43,27 @@ fn create_image(img: &DynamicImage, putanja_delova: String) {
             let mse = mean_square_error(&original_part, part);
             mse_values.push(mse);
         }
-        if
-            let Some((index, _)) = mse_values
-                .iter()
-                .enumerate()
-                .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-        {
-            // println!("Indeks: {}  min: {:?}", index, min);
+        // println!("mse{:?}", mse_values);
+        let min_indeks = find_min(&mse_values, &removed);
+        println!("min_indeks: {:?} ", min_indeks);
+        let index = min_indeks.expect("error");
+        removed.push(index);
+        append_part(&mut img.clone(), &original_parts[index], index, &mut new_img);
+        // append_part(&mut empty, &mut img.clone(), &part, index, &mut new_img);
+    }
+}
 
-            append_part(&mut img.clone(), &part, index, &mut new_img);
-            // append_part(&mut empty, &mut img.clone(), &part, index, &mut new_img);
-
-            original_parts.remove(index as usize);
-        } else {
-            println!("The vector is empty");
+fn find_min(array: &Vec<f64>, exclude: &[usize]) -> Option<usize> {
+    let mut min_val = f64::INFINITY;
+    let mut min_index = None;
+    println!("exclude{:?}", exclude);
+    println!("a{:?}", array);
+    for (index, &value) in array.iter().enumerate() {
+        if !exclude.contains(&index) && value < min_val {
+            min_val = value;
+            min_index = Some(index);
         }
     }
+
+    min_index
 }
