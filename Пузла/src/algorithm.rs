@@ -1,4 +1,5 @@
 use image::{ imageops::resize, RgbaImage };
+use rayon::iter::{ IntoParallelIterator, ParallelIterator };
 pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
     let (width1, height1) = img.dimensions();
     let (width2, height2) = img2.dimensions();
@@ -18,15 +19,17 @@ pub fn mean_square_error(img: &RgbaImage, img2: &RgbaImage) -> f64 {
     }
     let mut mse = 0.0;
     for y in 0..height {
-        for x in 0..width {
-            let p1 = img.get_pixel(x, y);
-            let p2 = img2.get_pixel(x, y);
-            mse +=
+        mse += (0..width)
+            .into_par_iter()
+            .map(move |x| {
+                let p1 = img.get_pixel(x, y);
+                let p2 = img2.get_pixel(x, y);
                 (((p1[0] as f64) - (p2[0] as f64)).powi(2) +
                     ((p1[1] as f64) - (p2[1] as f64)).powi(2) +
                     ((p1[2] as f64) - (p2[2] as f64)).powi(2)) /
-                3.0;
-        }
+                    3.0
+            })
+            .sum::<f64>();
     }
 
     return mse / ((width * height) as f64);
