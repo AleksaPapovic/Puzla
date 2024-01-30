@@ -5,13 +5,14 @@ pub mod save;
 pub mod algorithm;
 
 use std::{ collections::HashMap, fmt::format };
-
+use rayon::prelude::*;
 use read::{ read_images, read_parts, read_originals };
 use save::{ append_part };
 use image::{ io::Reader as ImageReader, DynamicImage, GenericImageView, RgbaImage };
 use algorithm::{ mean_square_error };
 
 fn main() {
+    // rayon::ThreadPoolBuilder::new().num_threads(4).build_global().unwrap();
     let redni_broj_slike = 3;
     let parts = "3";
     let map: HashMap<i32, Vec<String>> = HashMap::from([
@@ -22,14 +23,17 @@ fn main() {
         (5, vec!["5".to_string()]),
     ]);
     let originalne_slike = read_originals(String::from("src/examples"));
-    for (indeks, img) in originalne_slike.iter().enumerate() {
-        let key = (indeks + 1) as i32;
-        for (ip, part_path) in map.get(&key).iter().enumerate() {
-            for deo in part_path.iter() {
-                create_image(&img, &deo);
+    originalne_slike
+        .par_iter()
+        .enumerate()
+        .for_each(|(indeks, img)| {
+            let key = (indeks + 1) as i32;
+            for (ip, part_path) in map.get(&key).iter().enumerate() {
+                for deo in part_path.iter() {
+                    create_image(&img, &deo);
+                }
             }
-        }
-    }
+        });
 }
 
 fn create_image(img: &DynamicImage, deo: &String) {
