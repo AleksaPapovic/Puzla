@@ -97,3 +97,43 @@ fn max_size(mut mw: u32, mut mh: u32, cw: u32, ch: u32) -> (u32, u32) {
     }
     return (mw, mh);
 }
+
+pub fn read_originals(path_str: String) -> Vec<DynamicImage> {
+    let mut images: Vec<DynamicImage> = Vec::new();
+    let path = Path::new(&path_str);
+    if path.is_dir() {
+        if let Ok(entries) = fs::read_dir(path) {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let path = entry.path();
+                    if path.is_file() {
+                        let file = File::open(path).unwrap();
+                        let mut reader = BufReader::new(file);
+                        let mut start = [0; 8];
+                        reader.read_exact(&mut start).unwrap();
+                        let format = image::guess_format(&start).unwrap();
+                        match format {
+                            ImageFormat::Png => {
+                                reader.seek(SeekFrom::Start(0)).unwrap();
+                                let img = image::load(reader, format).unwrap();
+                                images.push(img);
+                            }
+                            ImageFormat::Jpeg => {
+                                reader.seek(SeekFrom::Start(0)).unwrap();
+                                let img = image::load(reader, format).unwrap();
+                                images.push(img);
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        } else {
+            println!("Could not read directory");
+        }
+    } else {
+        println!("Path is not a directory");
+    }
+
+    return images;
+}

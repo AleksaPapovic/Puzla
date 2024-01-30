@@ -1,29 +1,39 @@
 //E2-80-2023 Aleksa Papovic
 pub mod app;
-pub mod model;
 pub mod read;
 pub mod save;
 pub mod algorithm;
 
-use read::{ read_images, read_parts };
+use std::{ collections::HashMap, fmt::format };
+
+use read::{ read_images, read_parts, read_originals };
 use save::{ append_part };
 use image::{ io::Reader as ImageReader, DynamicImage, GenericImageView, RgbaImage };
 use algorithm::{ mean_square_error };
 
 fn main() {
-    let redni_broj_slike = 2;
-    let parts = "2 -1";
-
-    let putnja_slike = format!("src/examples/picture{redni_broj_slike}.jpg");
-    let putanja_delova = format!("src/examples/slika {parts}");
-
-    let mut img = ImageReader::open(putnja_slike).unwrap().decode().unwrap();
-
-    create_image(&img, putanja_delova);
+    let redni_broj_slike = 3;
+    let parts = "3";
+    let map: HashMap<i32, Vec<String>> = HashMap::from([
+        (1, vec!["1".to_string(), "1 - 1".to_string()]),
+        (2, vec!["2".to_string(), "2 -1".to_string()]),
+        (3, vec!["3".to_string()]),
+        (4, vec!["4".to_string()]),
+        (5, vec!["5".to_string()]),
+    ]);
+    let originalne_slike = read_originals(String::from("src/examples"));
+    for (indeks, img) in originalne_slike.iter().enumerate() {
+        let key = (indeks + 1) as i32;
+        for (ip, part_path) in map.get(&key).iter().enumerate() {
+            for deo in part_path.iter() {
+                create_image(&img, &deo);
+            }
+        }
+    }
 }
 
-fn create_image(img: &DynamicImage, putanja_delova: String) {
-    let parts = read_images(putanja_delova);
+fn create_image(img: &DynamicImage, deo: &String) {
+    let parts = read_images(format!("src/examples/slika {deo}"));
     // println!("parts {},height{}", parts.1, parts.2);
 
     let mut new_img = RgbaImage::new(img.width(), img.height());
@@ -42,7 +52,7 @@ fn create_image(img: &DynamicImage, putanja_delova: String) {
             Some(value) => {
                 removed.push(value);
                 println!("min_indeks: {:?} ", value);
-                append_part(&mut img.clone(), &original_parts[value], value, &mut new_img);
+                append_part(&mut img.clone(), &original_parts[value], value, &mut new_img, &deo);
             }
             None => {}
         };

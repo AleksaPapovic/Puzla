@@ -5,7 +5,8 @@ pub fn append_part(
     img: &mut DynamicImage,
     part_img: &RgbaImage,
     indeks: usize,
-    new_img: &mut RgbaImage
+    new_img: &mut RgbaImage,
+    putanja_delova: &String
 ) {
     let ow = (img.width() * 3) as usize;
     let oh = (img.height() * 3) as usize;
@@ -76,5 +77,5 @@ pub fn append_part(
         }
     }
 
-    new_img.save("result.jpg").unwrap();
+    new_img.save(format!("result{putanja_delova}.jpg")).unwrap();
 }
